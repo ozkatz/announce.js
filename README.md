@@ -1,11 +1,11 @@
 # Announce.js
 
-announce.js is node.js + socket.io server used for adding realtime-ness to your existing web application.
+announce.js is node.js + socket.io server used for adding real-time push notifications to your existing web application.
 
 ## what does that mean exactly? 
 
 Say you have an awesome web app you developed in Django\Rails\PHP\Perl\Java\Bash\Awk.
-You one day wake up and decide you want to add support for push (realtime) notifications.
+You one day wake up and decide you want to add support for push (real-time) notifications.
 Sure, you can run periodic AJAX calls, do long-polling, or utilize WebSockets yourself.
 But that's a lot of work, and that's what [Socket.IO](http://socket.io/ "Socket.IO") is for.
 
@@ -15,7 +15,7 @@ and send those realtime messages from your own code, in your own language, insid
 
 ## Awesome, How does it work?
 
-Well, it's basically a proxy server. when your web app calls announce.js, it does so over an internal HTTP API.
+Well, it's basically a proxy server. when your web app calls Announce.js, it does so over an internal HTTP API.
 On the client side, your client is also connected to the announce.js sever, using socket.io.
 So when you, inside your webapp, send a request (lets say, send a message "you rock!" to user A)
 the announce.js API takes that request, looks the appropriate socket for a client called "A", and emits
@@ -76,6 +76,8 @@ in any case, these config parameters are supported:
 * `api_port` - the port to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `6600`.
 * `socket_host` - the host to listen on for the external socket.IO server. defaults to `'0.0.0.0'` (so it will be available from the "outside").
 * `socket_port` - the port to listen on for the external socket.IO server. this should be open in your firewall for traffic coming in from the internet. defaults to `5500`.
+* `ssl_key` - path to an optional SSL key file. Add this and `ssl_certificate` if you want to server Announce.js over HTTPS.
+* `ssl_certificate` - path to an SSL certificate file. the server will start in SSL mode only if both `ssl_key` and `ssl_certificate` are provided, and both are valid. else, it will start in regular, unencrypted HTTP. so pay attention.
 * `sockets_volatile` - whether or not to buffer messages when sending to a client. read more about volatile mode [here](volatile "Socket.IO wiki"). defaults to `false`.
 
 
@@ -93,7 +95,7 @@ Steps 2,3,4,5 (requesting the token, setting the cookie, including the JS file, 
 are all handled by your platform's announce.js client.
 
 
-## Usage (with Django)
+## Usage Example (using the Django client)
 
 * install the announce.js server as described above, and run it.
 * add `announce` to `INSTALLED_APPS` in your settings.py file.
@@ -162,6 +164,5 @@ Here are some ideas that come to mind:
  and real world examples.
 * MOAR CLIENTS! support more languages and frameworks: RoR, PHP, etc.
 * Maybe rethink the authorization model. Need to better understand the security behind the cookie based token mechanism.
-* Add support for full duplex. i.e. client could also send events to the server.
-* Remove the redis dependency by introducing a local memory backend for storage.
+* Add support for full duplex? i.e. client could also send events to the server. not sure about this one yet.
 * probably many other things to come.

@@ -1,6 +1,10 @@
 {
     "name": "announce.js",
     "version" : "0.1.0",
+    "description": "Add real-time push notifications to your existing web application",
+    "homepage": "http://github.com/ozkatz/announce.js",
+    "engines" : ["node >= 0.6.11"],
+    "main": "server.js",
     "dependencies" : {
         "config" : "0.4.11",
         "express" : "2.5.8",
