@@ -33,26 +33,17 @@ Announce.js requires the following software installed and configured:
 ## Installation
 
 installing is pretty simple.
-clone this directory somewhere
 
 ```bash
-git clone git@github.com:ozkatz/announce.js.git
+npm install announce.js
 ```
 
-Install dependencies
+
+## Run the server
 
 ```bash
-cd announce.js/
-npm install
+node node_modules/announce.js/server.js
 ```
-
-Run the server
-
-```bash
-node server.js
-```
-
-And that's the basic setup.
 
 
 ## Configuration
