@@ -1,16 +1,73 @@
-/* announce.client.js 0.1.0 */
+/* announce.client.js 0.1.3 */
 var announce = (function(){
-    
+
+    // rooms
+    function Room(roomName){
+        this.roomName = roomName;
+        this.statusChannel = this.roomName + '/stats';
+        this.msgCallbacks = new Array();
+        this.statusCallbacks = new Array();
+
+        this.pingInterval = 5000;
+        this.socket = null;
+    }
+    Room.prototype = {
+
+        onMessage : function(callback) {
+            this.msgCallbacks.push(callback);
+            return this;
+        },
+
+        onStatusUpdate : function(callback) {
+            this.statusCallbacks.push(callback);
+            return this;
+        },
+
+        addMessage : function(msg) {
+            for (var i=0; i < this.msgCallbacks.length; i++) {
+                var callback = this.msgCallbacks[i];
+                callback(msg);
+            }
+        },
+
+        updateStatus : function(msg) {
+            for (var i=0; i < this.statusCallbacks.length; i++) {
+                var callback = this.statusCallbacks[i];
+                callback(msg);
+            }
+        },
+
+        pingAway : function(socket) {
+            var self = this;
+            socket.emit('announce-room-ping', {roomName : self.roomName});
+            setTimeout(function(){
+                self.pingAway(socket);
+            }, self.pingInterval);
+        },
+
+        init : function(socket){
+            var self = this;
+            socket.on(this.statusChannel, function(data){
+                self.updateStatus(data);
+            });
+            socket.on(this.roomName, function(data){
+                self.addMessage(data);
+            });
+            this.pingAway(socket);
+        }
+    }
+
     // define the crier client class
     function AnnounceClient(){
         this.callbacks = [];
+        this.rooms = [];
     }
     AnnounceClient.prototype = {
 
         getCookie : function(name) {
             name = name + "=";
             var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
+            for (var i=0; i < cookies.length; i++) {
                 var cookie = cookies[i];
                 while (cookie.charAt(0) == ' '){
                     cookie = cookie.substring(1, cookie.length);
@@ -31,7 +88,7 @@ var announce = (function(){
             // we use it to get the server path.
             var scripts = document.getElementsByTagName('script');
             var clientTag;
-            for (var i=0; i< scripts.length; i++){
+            for (var i=0; i < scripts.length; i++){
                 var src = scripts[i].getAttribute('src');
                 if (src){
                     var resourceLoc = src.indexOf('/client/announce.client.js');
@@ -57,7 +114,14 @@ var announce = (function(){
             return this;
         },
 
+        joinRoom : function(roomName){
+            var r = new Room(roomName);
+            this.rooms.push(r);
+            return r
+        },
+
         init : function(callback){
+            var self = this;
             // create a connection
             var announceToken = this.getAnnounceCookie();
             var callbacks = this.callbacks;
@@ -88,17 +152,21 @@ var announce = (function(){
                 if (data.status != 'success'){
                     return;
                 }
-
                 // call the callback functions.
                 for(var i=0; i < callbacks.length; i++){
                     var cb = callbacks[i];
                     cb(socket);
+                }
+                // initialize rooms
+                for (var i=0; i < self.rooms.length; i++){
+                    var room = self.rooms[i];
+                    room.init(socket);
                 }
             });
 
             return this;
         }
     }
-    // return a new instance of it.
-    return new AnnounceClient();
+    var announce = new AnnounceClient();
+    return announce;
 })();
