@@ -7,8 +7,6 @@ var announce = (function(){
         this.statusChannel = this.roomName + '/stats';
         this.msgCallbacks = new Array();
         this.statusCallbacks = new Array();
-
-        this.pingInterval = 5000;
         this.socket = null;
     }
     Room.prototype = {
@@ -37,12 +35,11 @@ var announce = (function(){
             }
         },
 
-        pingAway : function(socket) {
+        joinRoom : function(socket) {
             var self = this;
-            socket.emit('announce-room-ping', {roomName : self.roomName});
-            setTimeout(function(){
-                self.pingAway(socket);
-            }, self.pingInterval);
+            socket.emit('announce-room-join', {
+                roomName : self.roomName
+            });
         },
 
         init : function(socket){
@@ -53,7 +50,7 @@ var announce = (function(){
             socket.on(this.roomName, function(data){
                 self.addMessage(data);
             });
-            this.pingAway(socket);
+            this.joinRoom(socket);
         }
     }
 
