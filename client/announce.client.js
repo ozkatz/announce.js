@@ -56,8 +56,10 @@ var announce = (function(){
 
     // define the crier client class
     function AnnounceClient(){
-        this.callbacks = [];
-        this.rooms = [];
+        this.callbacks = new Array();
+        this.initCallbacks = new Array();
+        this.rooms = new Array();
+        this.socket = null;
     }
     AnnounceClient.prototype = {
 
@@ -105,15 +107,20 @@ var announce = (function(){
         // add the callback function to the array
         // ov callbacks to run on successful connection
         on : function(channel, callback){
-            this.callbacks.push(function(socket){
+            function cb(socket){
                 socket.on(channel, callback);
-            });
+            }
+            this.callbacks.push(cb);
+
+            if (this.socket) cb(this.socket); // if already connected, bind.
             return this;
         },
 
         joinRoom : function(roomName){
             var r = new Room(roomName);
             this.rooms.push(r);
+
+            if (this.socket) r.init(this.socket);
             return r
         },
 
@@ -149,6 +156,7 @@ var announce = (function(){
                 if (data.status != 'success'){
                     return;
                 }
+                self.socket = socket;
                 // call the callback functions.
                 for(var i=0; i < callbacks.length; i++){
                     var cb = callbacks[i];
