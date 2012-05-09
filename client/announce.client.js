@@ -22,6 +22,7 @@ var announce = (function(){
         },
 
         addMessage : function(msg) {
+            console.log('GOT ROOM MESSAGE: ' + JSON.stringify(msg));
             for (var i=0; i < this.msgCallbacks.length; i++) {
                 var callback = this.msgCallbacks[i];
                 callback(msg);
@@ -37,20 +38,25 @@ var announce = (function(){
 
         joinRoom : function(socket) {
             var self = this;
-            socket.emit('announce-room-join', {
+            self.socket.emit('announce-room-join', {
                 roomName : self.roomName
             });
         },
 
         init : function(socket){
             var self = this;
-            socket.on(this.statusChannel, function(data){
+            if (this.socket == socket){
+                self.joinRoom();
+                return;
+            }
+            self.socket = socket;
+            self.socket.on(self.statusChannel, function(data){
                 self.updateStatus(data);
             });
-            socket.on(this.roomName, function(data){
+            self.socket.on(self.roomName, function(data){
                 self.addMessage(data);
             });
-            this.joinRoom(socket);
+            self.joinRoom();
         }
     }
 
@@ -60,6 +66,7 @@ var announce = (function(){
         this.initCallbacks = new Array();
         this.rooms = new Array();
         this.socket = null;
+        this.connectionAttempt = 0;
     }
     AnnounceClient.prototype = {
 
@@ -116,6 +123,11 @@ var announce = (function(){
             return this;
         },
 
+        bind: function(callback) {
+            this.initCallbacks.push(callback);
+            if (this.socket) callback(this.socket);
+        },
+
         joinRoom : function(roomName){
             var r = new Room(roomName);
             this.rooms.push(r);
@@ -146,6 +158,7 @@ var announce = (function(){
             
             // authenticate with the token
             socket.on('connect', function(){
+                self.connectionAttempt++;
                 socket.emit('announce-authentication', {
                     authString : announceToken
                 });
@@ -157,6 +170,8 @@ var announce = (function(){
                     return;
                 }
                 self.socket = socket;
+                //if (self.connectionAttempt > 1) return;
+
                 // call the callback functions.
                 for(var i=0; i < callbacks.length; i++){
                     var cb = callbacks[i];
@@ -166,6 +181,12 @@ var announce = (function(){
                 for (var i=0; i < self.rooms.length; i++){
                     var room = self.rooms[i];
                     room.init(socket);
+                }
+
+                // call the init callback
+                for (var i=0; i < self.initCallbacks.length; i++) {
+                    var cb = self.initCallbacks[i];
+                    cb(socket);
                 }
             });
 
