@@ -22,7 +22,6 @@ var announce = (function(){
         },
 
         addMessage : function(msg) {
-            console.log('GOT ROOM MESSAGE: ' + JSON.stringify(msg));
             for (var i=0; i < this.msgCallbacks.length; i++) {
                 var callback = this.msgCallbacks[i];
                 callback(msg);
