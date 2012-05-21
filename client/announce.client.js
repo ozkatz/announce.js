@@ -169,7 +169,7 @@ var announce = (function(){
                     return;
                 }
                 self.socket = socket;
-                //if (self.connectionAttempt > 1) return;
+                if (self.connectionAttempt > 1) return;
 
                 // call the callback functions.
                 for(var i=0; i < callbacks.length; i++){
