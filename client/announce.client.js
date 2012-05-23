@@ -140,20 +140,22 @@ var announce = (function(){
             // create a connection
             var announceToken = this.getAnnounceCookie();
             var callbacks = this.callbacks;
+            var connectionOptions = {
+                // can't automatically reconnect in a reliable way
+                // until https://github.com/LearnBoost/socket.io/issues/430
+                // is closed.
+                reconnect : false
+            };
             if (announceToken == null) return;
 
             var socketServer = this.getServerPath();
-            if (!socketServer){
-                // auto discovery. Don't count on this working.
-                var socket = io.connect();
-            } else {
-                // check if HTTPS is on
-                if (this.requestIsSecure(socketServer)) {
-                    var socket = io.connect(socketServer, { secure: true });
-                } else {
-                    var socket = io.connect(socketServer);
-                }
-            }
+            
+            // check if HTTPS is on
+            if (this.requestIsSecure(socketServer))
+                connectionOptions.secure = true;
+            
+            var socket = io.connect(socketServer, connectionOptions);
+            
             
             // authenticate with the token
             socket.on('connect', function(){
