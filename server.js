@@ -12,6 +12,7 @@ var settings = {
   storage : config.storage_type || 'redis', // redis is on by default.
   redisHost : config.redis_host || 'localhost',
   redisPort : config.redis_port || 6379,
+  redisPassword : config.redis_password || '',
   apiHost : config.api_host || 'localhost',
   apiPort : config.api_port || 6600, 
   socketHost : config.socket_host || '0.0.0.0',
