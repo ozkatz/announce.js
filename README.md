@@ -63,6 +63,7 @@ in any case, these config parameters are supported:
 * `storage` - which storage backend to use. options are either `mem` or `redis`. defaults to `redis`, which also happens to be the preffered backend. the local memory backend should only be used for testing.
 * `redis_host` - the host used for Redis connections. defaults to `'localhost'`.
 * `redis_port` - the port used for Redis connections. defaults to `6379`.
+* `redis_password` - set this to your Redis password, in case one is set.
 * `api_host` - the host to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `'localhost'`.
 * `api_port` - the port to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `6600`.
 * `socket_host` - the host to listen on for the external socket.IO server. defaults to `'0.0.0.0'` (so it will be available from the "outside").
