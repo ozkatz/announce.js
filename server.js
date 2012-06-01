@@ -1,25 +1,33 @@
 // imports. please see package.json for required dependencies.
 // install all dependencies with `npm install`.
 var fs = require('fs');
-var config = require('config');
+var argv = require('optimist').argv;
+var utils = require('./lib/utils');
 var api = require('./lib/api');
 var frontend = require('./lib/frontend');
 var listener = require('./lib/listener');
 
 // initialize settings with some default values.
-var volatileDefined = (config.sockets_volatile === undefined);
 var settings = {
-  storage : config.storage_type || 'redis', // redis is on by default.
-  redisHost : config.redis_host || 'localhost',
-  redisPort : config.redis_port || 6379,
-  redisPassword : config.redis_password || '',
-  apiHost : config.api_host || 'localhost',
-  apiPort : config.api_port || 6600, 
-  socketHost : config.socket_host || '0.0.0.0',
-  socketPort : config.socket_port || 5500,
-  sslKey : config.ssl_key || null,
-  sslCert : config.ssl_certificate || null,
-  isVolatile : (volatileDefined) ? false : config.sockets_volatile
+  storage : 'redis',
+  redisHost : 'localhost',
+  redisPort : 6379,
+  redisPassword : null,
+  apiHost : 'localhost',
+  apiPort : 6600, 
+  socketHost :'0.0.0.0',
+  socketPort : 5500,
+  sslKey : null,
+  sslCert : null,
+  isVolatile : false
+}
+
+if (argv.config) {
+  // if a settings JSON file is found,
+  // merge it with the options
+  var content = fs.readFileSync(argv.config);
+  var config = JSON.parse(content);
+  settings = utils.mergeOptions(settings, config);
 }
 
 // get a storage instance
@@ -71,5 +79,4 @@ listener.bindEventListener(
   settings.isVolatile
 );
 console.log('Started pub/sub listener');
-
 

@@ -1,4 +1,4 @@
-/* announce.client.js 0.2.24 */
+/* announce.client.js 0.2.3 */
 var announce = (function(){
 
     // rooms

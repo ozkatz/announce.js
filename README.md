@@ -9,16 +9,16 @@ You one day wake up and decide you want to add support for push (real-time) noti
 Sure, you can run periodic AJAX calls, do long-polling, or utilize WebSockets yourself.
 But that's a lot of work, and that's what [Socket.IO](http://socket.io/ "Socket.IO") is for.
 
-announce.js lets you seamlessly (well, almost) integrate your existing framework with the power of node and socket.io.
+Announce.js lets you seamlessly (well, almost) integrate your existing framework with the power of node and socket.io.
 just install it, add the proper client for your web framework of choice (currently, it's Django only),
 and send those realtime messages from your own code, in your own language, inside your own views.
 
 ## Awesome, How does it work?
 
-Well, it's basically a proxy server. when your web app calls Announce.js, it does so over an internal HTTP API.
+Well, it's basically a proxy server. when your web app calls announce.js, it does so over an internal HTTP API.
 On the client side, your client is also connected to the announce.js sever, using socket.io.
 So when you, inside your webapp, send a request (lets say, send a message "you rock!" to user A)
-the announce.js API takes that request, looks the appropriate socket for a client called "A", and emits
+the announce.js API takes that request, finds the appropriate socket for a client called "A", and emits
 that message. that's the basic workflow.
 
 ## Dependencies
@@ -47,30 +47,30 @@ node node_modules/announce.js/server.js
 
 
 ## Configuration
+**changed in 0.2.3** 
 
-Configuring announce is done by creating a json file inside `announce.js/config/`.
-the name of that file should be `<environment name>.json`. where `<environment name>` is replaced
-by the value of the environment variable `NODE_ENV`. If it isn't set, the default would be `development.json`.
-to run with anything else (say, production) start your node server like this:
+Configuring announce is done by providing a JSON configuration file as a command line argument.
+To specify the path to this file, use the `--config` command line option, like so:
 
 ```bash
-NODE_ENV=production node server.js
+node server.js --config=/path/to/settings.json
 ```
 
-For most cases, all the above is not required as announce.js has some pretty sane defaults.
-in any case, these config parameters are supported:
+For local development, the above is not required as announce.js has some pretty sane defaults.
+in any case, these configuration parameters are supported:
 
 * `storage` - which storage backend to use. options are either `mem` or `redis`. defaults to `redis`, which also happens to be the preffered backend. the local memory backend should only be used for testing.
-* `redis_host` - the host used for Redis connections. defaults to `'localhost'`.
-* `redis_port` - the port used for Redis connections. defaults to `6379`.
-* `redis_password` - set this to your Redis password, in case one is set.
-* `api_host` - the host to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `'localhost'`.
-* `api_port` - the port to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `6600`.
-* `socket_host` - the host to listen on for the external socket.IO server. defaults to `'0.0.0.0'` (so it will be available from the "outside").
-* `socket_port` - the port to listen on for the external socket.IO server. this should be open in your firewall for traffic coming in from the internet. defaults to `5500`.
-* `ssl_key` - path to an optional SSL key file. Add this and `ssl_certificate` if you want to server Announce.js over HTTPS.
-* `ssl_certificate` - path to an SSL certificate file. the server will start in SSL mode only if both `ssl_key` and `ssl_certificate` are provided, and both are valid. else, it will start in regular, unencrypted HTTP. so pay attention.
-* `sockets_volatile` - whether or not to buffer messages when sending to a client. read more about volatile mode [here](volatile "Socket.IO wiki"). defaults to `false`.
+* `redisHost` - the host used for Redis connections. defaults to `'localhost'`.
+* `redisPort` - the port used for Redis connections. defaults to `6379`.
+* `redisPassword` - set this to your Redis password, if your Redis server requires one.
+* `apiHost` - the host to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `'localhost'`.
+* `apiPort` - the port to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to `6600`.
+* `socketHost` - the host to listen on for the external socket.IO server. defaults to `'0.0.0.0'` (so it will be available from the "outside").
+* `socketPort` - the port to listen on for the external socket.IO server. this should be open in your firewall for traffic coming in from the internet. defaults to `5500`.
+* `sslKey` - path to an optional SSL key file. Add this and `sslCertificate` if you want to serve announce.js over HTTPS.
+* `sslCertificate` - path to an SSL certificate file. the server will start in SSL mode only if both `sslKey` and `sslCertificate` are provided, and both are valid. else, it will start in regular, unencrypted HTTP. so pay attention.
+* `socketsVolatile` - whether or not to buffer messages when sending to a client. read more about volatile mode [here](https://github.com/LearnBoost/socket.io/wiki/Messaging "Socket.IO wiki"). defaults to `false`.
+
 
 
 ## Authorization
@@ -84,10 +84,10 @@ The announce.js authorization model works like this:
 5. upon successful validation, a connection is established and your client will start listening on channels and events you define.
 
 Steps 2,3,4,5 (requesting the token, setting the cookie, including the JS file, validating the token from the client)
-are all handled by your platform's announce.js client.
+are all handled by your framework's announce.js client.
 
 
-## Usage Example (using the Django client)
+## Usage Example (using the [Django client](https://github.com/ozkatz/django-announce/ "Announce.js Django client"))
 
 * install the announce.js server as described above, and run it.
 * add `announce` to `INSTALLED_APPS` in your settings.py file.
@@ -130,7 +130,7 @@ announce.init();
 ```
 
 Your client should receive an alert with the notification. the channel name (`notifications`) and the data you send
-are completley up to you, so be creative and use it wisely.
+are completley up to you.
 
 If you have more than one channel we want to listen on, we can also chain these calls:
 
@@ -152,9 +152,35 @@ announce.on('notifications', function(data){
 Well, announce.js is still brand new, and there are many ways to improve it.
 Here are some ideas that come to mind:
 
-* documentation. this README might be enough to get started, but we need good API reference, a getting started tutorial,
+* documentation. this README might be enough to get started, but we need a good API reference, a getting started tutorial,
  and real world examples.
 * MOAR CLIENTS! support more languages and frameworks: RoR, PHP, etc.
 * Maybe rethink the authorization model. Need to better understand the security behind the cookie based token mechanism.
 * Add support for full duplex? i.e. client could also send events to the server. not sure about this one yet.
 * probably many other things to come.
+
+
+## License 
+
+(The MIT License)
+
+Copyright (c) 2012 Oz Katz &lt;oz.katz@ripplify.com&gt;
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
