@@ -1,0 +1,248 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Announce.js by ozkatz</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Announce.js</h1>
+        <p>Seamlessly add realtime notifications to your existing web app</p>
+        <p class="view"><a href="https://github.com/ozkatz/announce.js">View the Project on GitHub <small>ozkatz/announce.js</small></a></p>
+        <ul>
+          <li><a href="https://github.com/ozkatz/announce.js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ozkatz/announce.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ozkatz/announce.js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Announce.js</h1>
+
+<p>announce.js is a Node.js + Socket.io server used for adding real-time push notifications to your existing web application.</p>
+
+<h2>what does that mean exactly?</h2>
+
+<p>Say you have an awesome web app you developed in Django\Rails\PHP\Perl\Java\Bash\Awk.
+You one day decide you want to add support for push (real-time) notifications.
+Sure, you can run periodic AJAX calls, do long-polling, or utilize WebSockets yourself.
+But that's a lot of work, and that's what <a href="http://socket.io/" title="Socket.IO">Socket.IO</a> is for.</p>
+
+<p>Announce.js lets you easily integrate your existing framework with the power of socket.io.
+just install it, add the proper client for your web framework of choice (currently, it's Django only),
+and send those realtime messages from your own code, in your own language, inside your own views.
+announce.js will take care of distribution (which sockets should I send data to?) and authentication
+(how can I securely map these sockets to my users?).</p>
+
+<h2>Awesome, How does it work?</h2>
+
+<p>Well, it's basically a proxy server. when your web app calls announce.js, it does so over an internal HTTP API.
+On the client side, your client is also connected to the announce.js sever, using socket.io.
+So when you, inside your webapp, send a request (lets say, send a message "you rock!" to user A)
+the announce.js API takes that request, finds the appropriate socket(s) for a client called "A", and emits
+that message. that's the basic workflow.</p>
+
+<h2>Dependencies</h2>
+
+<p>Announce.js requires the following software installed and configured:</p>
+
+<ul>
+<li><a href="http://nodejs.org/" title="Node.js">Node.js</a></li>
+<li>
+<a href="http://npmjs.org/" title="NPM">NPM</a> (automatically installs all 3rd party libraries this project depends on.)</li>
+<li>
+<a href="http://redis.io/" title="Redis">Redis</a> (optional, but highly recommended. see <em>Configuration</em> below).</li>
+</ul><h2>Installation</h2>
+
+<p>installing is pretty simple.</p>
+
+<div class="highlight">
+<pre>npm install announce.js
+</pre>
+</div>
+
+
+<h2>Run the server</h2>
+
+<div class="highlight">
+<pre>node node_modules/announce.js/server.js
+</pre>
+</div>
+
+
+<h2>Configuration</h2>
+
+<p><strong>changed in 0.2.3</strong> </p>
+
+<p>Configuring announce is done by providing a JSON configuration file as a command line argument.
+To specify the path to this file, use the <code>--config</code> command line option, like so:</p>
+
+<div class="highlight">
+<pre>node server.js --config<span class="o">=</span>/path/to/settings.json
+</pre>
+</div>
+
+
+<p>For local development, the above is not required as announce.js has some pretty sane defaults.
+in any case, these configuration parameters are supported:</p>
+
+<ul>
+<li>
+<code>storage</code> - which storage backend to use. options are either <code>mem</code> or <code>redis</code>. defaults to <code>redis</code>, which also happens to be the preffered backend. the local memory backend should only be used for testing.</li>
+<li>
+<code>redisHost</code> - the host used for Redis connections. defaults to <code>'localhost'</code>.</li>
+<li>
+<code>redisPort</code> - the port used for Redis connections. defaults to <code>6379</code>.</li>
+<li>
+<code>redisPassword</code> - set this to your Redis password, if your Redis server requires one.</li>
+<li>
+<code>apiHost</code> - the host to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to <code>'localhost'</code>.</li>
+<li>
+<code>apiPort</code> - the port to listen on for the internal API. this should be the same value used in your webapp to connect to announce.js. defaults to <code>6600</code>.</li>
+<li>
+<code>socketHost</code> - the host to listen on for the external socket.IO server. defaults to <code>'0.0.0.0'</code> (so it will be available from the "outside").</li>
+<li>
+<code>socketPort</code> - the port to listen on for the external socket.IO server. this should be open in your firewall for traffic coming in from the internet. defaults to <code>5500</code>.</li>
+<li>
+<code>sslKey</code> - path to an optional SSL key file. Add this and <code>sslCertificate</code> if you want to serve announce.js over HTTPS.</li>
+<li>
+<code>sslCertificate</code> - path to an SSL certificate file. the server will start in SSL mode only if both <code>sslKey</code> and <code>sslCertificate</code> are provided, and both are valid. else, it will start in regular, unencrypted HTTP. so pay attention.</li>
+<li>
+<code>socketsVolatile</code> - whether or not to buffer messages when sending to a client. read more about volatile mode <a href="https://github.com/LearnBoost/socket.io/wiki/Messaging" title="Socket.IO wiki">here</a>. defaults to <code>false</code>.</li>
+</ul><h2>Authorization</h2>
+
+<p>The announce.js authorization model works like this:</p>
+
+<ol>
+<li>client A makes a request to your webapp.</li>
+<li>your webapp turns to announce.js's internal API and requests a token for that user's ID.</li>
+<li>upon receiving the token, the webapp sets a cookie called <code>announceToken</code> to the value of the token, and renders the requested page back to client A.</li>
+<li>the requested page (containing the announce.js javascript include) uses this cookie to retrieve the token, and validates it against the announce.js server.</li>
+<li>upon successful validation, a connection is established and your client will start listening on channels and events you define.</li>
+</ol><p>These steps are all handled by your framework's announce.js client. you just need to install announce,
+include the javascript client on your page, and start the announce.js server.</p>
+
+<h2>Usage Example (using the <a href="https://github.com/ozkatz/django-announce/" title="Announce.js Django client">Django client</a>)</h2>
+
+<ul>
+<li>install the announce.js server as described above, and run it.</li>
+<li>add <code>announce</code> to <code>INSTALLED_APPS</code> in your settings.py file.</li>
+<li>add <code>'announce.middleware.AnnounceCookieMiddleware'</code> to your <code>MIDDLEWARE_CLASSES</code>settings. right above <code>SessionMiddleware</code>. this will take care of setting the authentication cookie.</li>
+<li>in your templates, add <code>{% load announcetags %}</code> at the top of the template. inside your <code>&lt;head&gt;</code> tag, add <code>{% announce_js %}</code>. this will include the proper <code>&lt;script&gt;</code> tags for you. place this tag above any js files that use the announce.js client.</li>
+<li>the following optional settings are availabe:
+
+<ul>
+<li>
+<code>ANNOUNCE_CLIENT_ADDR</code> - defaults to <code>'localhost:5500'</code>. <em>should probably be changed for production.</em>
+</li>
+<li>
+<code>ANNOUNCE_API_ADDR</code> - defaults to <code>'localhost:6600'</code>.</li>
+<li>
+<code>ANNOUNCE_HTTPS</code> - defaults to <code>False</code>. HTTPS is not yet implemented.</li>
+</ul>
+</li>
+</ul><p>Now, from a view, emit a message to a user:</p>
+
+<div class="highlight">
+<pre><span class="kn">from</span> <span class="nn">announce</span> <span class="kn">import</span> <span class="n">AnnounceClient</span>
+<span class="n">announce_client</span> <span class="o">=</span> <span class="n">AnnounceClient</span><span class="p">()</span>
+
+<span class="c"># This is our pseudo view code</span>
+<span class="k">def</span> <span class="nf">comment_on_blog</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="c"># Process stuff, handle forms, do whatever you want.</span>
+    <span class="n">announce_client</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+        <span class="s">'notifications'</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="p">{</span> <span class="s">'msg'</span> <span class="p">:</span> <span class="s">'You have a new comment!'</span> <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="c"># Some other things happening here..</span>
+    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="s">'blog_post.html'</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<p>In your HTML code, add the following JS snippet, to receive this notification on the client's side:</p>
+
+<div class="highlight">
+<pre><span class="c1">// use .on() to add a listener. you can add as many listeners as you want.</span>
+<span class="nx">announce</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'notifications'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">msg</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="c1">// .init() will authenticate against the announce.js server, and open the WebSocket connection.</span>
+<span class="nx">announce</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+</pre>
+</div>
+
+
+<p>Your client should receive an alert with the notification. the channel name (<code>notifications</code>) and the data you send
+are completley up to you.</p>
+
+<p>If you have more than one channel we want to listen on, we can also chain these calls:</p>
+
+<div class="highlight">
+<pre><span class="nx">announce</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'notifications'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+    <span class="nx">popupNotification</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">msg</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'alerts'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)}{</span>
+    <span class="nx">alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">alert_msg</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'something-else'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#someDiv'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">htmlContent</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">init</span><span class="p">();</span>
+</pre>
+</div>
+
+
+<h2>TODO</h2>
+
+<p>Well, announce.js is still brand new, and there are many ways to improve it.
+Here are some ideas that come to mind:</p>
+
+<ul>
+<li>documentation. this README might be enough to get started, but we need a good API reference, a getting started tutorial,
+and real world examples.</li>
+<li>MOAR CLIENTS! support more languages and frameworks: RoR, PHP, etc.</li>
+<li>Maybe rethink the authorization model. Need to better understand the security behind the cookie based token mechanism.</li>
+<li>probably many other things to come.</li>
+</ul><h2>License</h2>
+
+<p>(The MIT License)</p>
+
+<p>Copyright (c) 2012 Oz Katz &lt;<a href="mailto:oz.katz@ripplify.com">oz.katz@ripplify.com</a>&gt;</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/ozkatz">ozkatz</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
