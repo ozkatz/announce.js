@@ -1,7 +1,7 @@
 {
     "name" : "announce.js",
     "author" : "Oz Katz <oz.katz@ripplify.com>",
-    "version" : "0.2.3",
+    "version" : "0.2.31",
     "description" : "Add real-time push notifications to your existing web application",
     "homepage" : "http://github.com/ozkatz/announce.js",
     "bin" : { "announce" : "./server.js" },

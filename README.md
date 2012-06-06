@@ -1,24 +1,26 @@
 # Announce.js
 
-announce.js is node.js + socket.io server used for adding real-time push notifications to your existing web application.
+announce.js is a Node.js + Socket.io server used for adding real-time push notifications to your existing web application.
 
 ## what does that mean exactly? 
 
 Say you have an awesome web app you developed in Django\Rails\PHP\Perl\Java\Bash\Awk.
-You one day wake up and decide you want to add support for push (real-time) notifications.
+You one day decide you want to add support for push (real-time) notifications.
 Sure, you can run periodic AJAX calls, do long-polling, or utilize WebSockets yourself.
 But that's a lot of work, and that's what [Socket.IO](http://socket.io/ "Socket.IO") is for.
 
-Announce.js lets you seamlessly (well, almost) integrate your existing framework with the power of node and socket.io.
+Announce.js lets you easily integrate your existing framework with the power of socket.io.
 just install it, add the proper client for your web framework of choice (currently, it's Django only),
 and send those realtime messages from your own code, in your own language, inside your own views.
+announce.js will take care of distribution (which sockets should I send data to?) and authentication
+(how can I securely map these sockets to my users?).
 
 ## Awesome, How does it work?
 
 Well, it's basically a proxy server. when your web app calls announce.js, it does so over an internal HTTP API.
 On the client side, your client is also connected to the announce.js sever, using socket.io.
 So when you, inside your webapp, send a request (lets say, send a message "you rock!" to user A)
-the announce.js API takes that request, finds the appropriate socket for a client called "A", and emits
+the announce.js API takes that request, finds the appropriate socket(s) for a client called "A", and emits
 that message. that's the basic workflow.
 
 ## Dependencies
@@ -83,8 +85,8 @@ The announce.js authorization model works like this:
 4. the requested page (containing the announce.js javascript include) uses this cookie to retrieve the token, and validates it against the announce.js server.
 5. upon successful validation, a connection is established and your client will start listening on channels and events you define.
 
-Steps 2,3,4,5 (requesting the token, setting the cookie, including the JS file, validating the token from the client)
-are all handled by your framework's announce.js client.
+These steps are all handled by your framework's announce.js client. you just need to install announce,
+include the javascript client on your page, and start the announce.js server.
 
 
 ## Usage Example (using the [Django client](https://github.com/ozkatz/django-announce/ "Announce.js Django client"))
@@ -137,13 +139,10 @@ If you have more than one channel we want to listen on, we can also chain these 
 ```js
 announce.on('notifications', function(data){
     popupNotification(data.msg);
-
 }).on('alerts', function(data)}{
     alert(data.alert_msg);
-
 }).on('something-else', function(data){
     $('#someDiv').html(data.htmlContent);
-    
 }).init();
 ```
 
@@ -156,7 +155,6 @@ Here are some ideas that come to mind:
  and real world examples.
 * MOAR CLIENTS! support more languages and frameworks: RoR, PHP, etc.
 * Maybe rethink the authorization model. Need to better understand the security behind the cookie based token mechanism.
-* Add support for full duplex? i.e. client could also send events to the server. not sure about this one yet.
 * probably many other things to come.
 
 
