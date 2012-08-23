@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/ozkatz/announce.js.png)](http://travis-ci.org/ozkatz/announce.js)
 # Announce.js
 
 announce.js is a Node.js + Socket.io server used for adding real-time push notifications to your existing web application.
