@@ -7,6 +7,7 @@ var api = require('./lib/api');
 var frontend = require('./lib/frontend');
 var listener = require('./lib/listener');
 
+
 // initialize settings with some default values.
 var settings = {
   storage : 'redis',
